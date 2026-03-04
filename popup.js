@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnClean = document.getElementById('copy-clean');
     const btnSelect = document.getElementById('select-element');
     const btnDownload = document.getElementById('download-md');
+    const btnPrint = document.getElementById('print-content');
 
     // Session Controls
     const btnSessionAdd = document.getElementById('session-add');
@@ -209,6 +210,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 showStatus("Скачивание началось!");
                 break;
+
+            case 'print-content':
+                try {
+                    localStorage.setItem('rixai-print-html', formats.html);
+                    localStorage.setItem('rixai-print-title', formats.title || 'document');
+                    chrome.tabs.create({ url: 'print.html' });
+                } catch (e) {
+                    showStatus("Ошибка печати", false);
+                }
+                break;
         }
     }
 
@@ -333,6 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnMd) btnMd.addEventListener('click', () => executeAction('copy-md'));
     if (btnClean) btnClean.addEventListener('click', () => executeAction('copy-clean'));
     if (btnDownload) btnDownload.addEventListener('click', () => executeAction('download-md'));
+    if (btnPrint) btnPrint.addEventListener('click', () => executeAction('print-content'));
 
     // Automatically extract content on open to show tokens immediately
     extractPageContent();

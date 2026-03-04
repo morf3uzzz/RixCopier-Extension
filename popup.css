@@ -181,16 +181,19 @@ main {
 
 .row-select {
     display: flex;
-    gap: 8px;
-    align-items: center;
+    gap: 6px;
+    align-items: stretch;
     width: 100%;
 }
 
-.row-select #select-element {
-    flex: 2;
-    /* Make this button take up more space again */
-    padding: 10px 8px;
-    font-size: 0.85rem;
+.row-select>* {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 4px;
+    font-size: 0.8rem;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
 }
 
 .hotkey-wrapper {
@@ -201,11 +204,8 @@ main {
     background: rgba(0, 119, 255, 0.05);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 0 12px;
-    min-width: 100px;
-    height: 40px;
+    height: auto;
     position: relative;
-    box-sizing: border-box;
 }
 
 .hotkey-label {
