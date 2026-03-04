@@ -1,0 +1,7 @@
+.agents/
+.agent/
+repomix-output.xml
+.DS_Store
+.vscode/
+node_modules/
+*.log

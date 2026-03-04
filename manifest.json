@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "RixAI Markdown Copier",
+    "version": "1.0",
+    "description": "Умное копирование статей в Текст или Markdown, скачивание .md файлов.",
+    "permissions": [
+        "activeTab",
+        "scripting",
+        "downloads"
+    ],
+    "icons": {
+        "16": "icon.png",
+        "48": "icon.png",
+        "128": "icon.png"
+    },
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": "icon.png"
+    },
+    "background": {
+        "service_worker": "background.js"
+    }
+}
