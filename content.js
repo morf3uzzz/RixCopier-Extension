@@ -67,6 +67,20 @@ if (typeof window.rixaiInitialized === 'undefined') {
         return node;
     }
 
+    function getSpacedText(htmlString) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlString;
+        const blocks = tempDiv.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6, li, br, article, section');
+        blocks.forEach(b => {
+            if (b.tagName.toLowerCase() === 'br') {
+                b.replaceWith(document.createTextNode('\n'));
+            } else {
+                b.prepend(document.createTextNode('\n\n'));
+            }
+        });
+        return tempDiv.textContent.replace(/\n\s*\n/g, '\n\n').trim();
+    }
+
     // --- EXTRACTION STRATEGIES ---
 
     // 1. Smart Selection Extraction
@@ -87,7 +101,7 @@ if (typeof window.rixaiInitialized === 'undefined') {
         return {
             type: 'selection',
             title: document.title,
-            text: cleanedContainer.innerText || cleanedContainer.textContent,
+            text: getSpacedText(cleanedContainer.innerHTML),
             html: cleanedContainer.innerHTML
         };
     }
@@ -105,10 +119,8 @@ if (typeof window.rixaiInitialized === 'undefined') {
             if (article && article.content) {
                 htmlContent = article.content;
                 title = article.title || document.title;
-                // Create a temporary div to get plain text from the HTML string
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = htmlContent;
-                textContent = tempDiv.textContent || tempDiv.innerText || '';
+                // Create a temporary div to get spaced plain text
+                textContent = getSpacedText(htmlContent);
             } else {
                 throw new Error("Readability failed or returned empty");
             }
@@ -126,7 +138,7 @@ if (typeof window.rixaiInitialized === 'undefined') {
             const cleanedElement = cleanHtml(mainElement);
 
             htmlContent = cleanedElement.innerHTML;
-            textContent = cleanedElement.innerText || cleanedElement.textContent || '';
+            textContent = getSpacedText(htmlContent);
         }
 
         return {
@@ -269,10 +281,15 @@ if (typeof window.rixaiInitialized === 'undefined') {
         let combinedHtml = "";
         let combinedText = "";
 
-        selectedElements.forEach(el => {
+        // Filter out elements that are descendants of other selected elements to prevent duplication
+        const topLevelElements = selectedElements.filter(el => {
+            return !selectedElements.some(otherEl => otherEl !== el && otherEl.contains(el));
+        });
+
+        topLevelElements.forEach(el => {
             const cloneNode = el.cloneNode(true);
             const cleanedElement = cleanHtml(cloneNode);
-            combinedText += (cleanedElement.innerText || cleanedElement.textContent || "") + "\n\n";
+            combinedText += getSpacedText(cleanedElement.innerHTML) + "\n\n";
             combinedHtml += cleanedElement.outerHTML + "\n\n";
         });
 
