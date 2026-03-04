@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Final Output Strings
         const finalMd = metadataHeader + (type === 'full-page' ? `# ${title}\n\n` : '') + markdown;
         const finalTxt = (toggleMetadata.checked ? `Source: ${metadata?.url || 'Unknown'}\n\n` : '') + text;
-        const cleanTxt = text.replace(/\n\s*\n/g, '\n\n').trim(); // Strip excess whitespace completely
+        const cleanTxt = text.replace(/\s*\n\s*/g, '\n').trim(); // Strip excess whitespace and collapse multiple newlines into one
 
         return { finalMd, finalTxt, cleanTxt, title: title || 'content' };
     }
