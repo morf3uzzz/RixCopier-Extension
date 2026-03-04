@@ -164,7 +164,12 @@ if (typeof window.rixaiInitialized === 'undefined') {
             // Try extracting selection first
             let content = extractSelectedContent();
 
-            // If no selection, extract full page
+            // If no window selection, check if there was a recent interactive block selection (within 5 minutes)
+            if (!content && typeof lastInteractiveResult !== 'undefined' && lastInteractiveResult && (Date.now() - lastInteractiveTime < 300000)) {
+                content = lastInteractiveResult;
+            }
+
+            // If still no selection, default to full page
             if (!content) {
                 content = extractFullPageContent();
             }
@@ -185,6 +190,8 @@ if (typeof window.rixaiInitialized === 'undefined') {
 
     let isInteractiveMode = false;
     let hoveredElement = null;
+    let lastInteractiveResult = null;
+    let lastInteractiveTime = 0;
     let selectedElements = [];
     let multiSelectHotkey = 'alt';
     let heldKeys = new Set();
@@ -238,6 +245,19 @@ if (typeof window.rixaiInitialized === 'undefined') {
         else if (heldKeys.has(multiSelectHotkey)) isMultiClick = true;
 
         const index = selectedElements.indexOf(hoveredElement);
+
+        if (!isMultiClick) {
+            // Finalize with normal click
+            if (selectedElements.length === 0) {
+                // Single element select & copy
+                selectedElements.push(hoveredElement);
+            }
+            // If they already multi-selected with Alt earlier, a normal click just acts as the "Enter" key and finalizes,
+            // WITHOUT adding the click target (which is usually the background/body by accident).
+            finalizeSelection();
+            return;
+        }
+
         if (index === -1) {
             selectedElements.push(hoveredElement);
             // Persist highlight for selected items (Green)
@@ -248,18 +268,11 @@ if (typeof window.rixaiInitialized === 'undefined') {
             selectedElements.splice(index, 1);
             hoveredElement.style.outline = '3px solid #0077ff'; // back to hover blue
             hoveredElement.style.backgroundColor = 'rgba(0, 119, 255, 0.1)';
-            if (!isMultiClick) return; // Keep going if it's just a deselect error click without modifying combo
         }
-
-        if (!isMultiClick) {
-            finalizeSelection();
-        } else {
-            // Update toast to show count
-            const toast = document.getElementById('rixai-interactive-toast');
-            if (toast) {
-                const displayKey = multiSelectHotkey === 'alt' ? 'ALT/OPT' : multiSelectHotkey.toUpperCase();
-                toast.innerHTML = `<strong>RixAI Мульти-выбор:</strong> Выбрано: <b>${selectedElements.length}</b>. Зажмите <kbd>${displayKey}</kbd>+Клик для добавления. Обычный клик или <kbd>Enter</kbd> = Копировать.`;
-            }
+        const toast = document.getElementById('rixai-interactive-toast');
+        if (toast) {
+            const displayKey = multiSelectHotkey === 'alt' ? 'ALT/OPT' : multiSelectHotkey.toUpperCase();
+            toast.innerHTML = `<strong>RixAI Мульти-выбор:</strong> Выбрано: <b>${selectedElements.length}</b>. Зажмите <kbd>${displayKey}</kbd>+Клик для добавления. Обычный клик или <kbd>Enter</kbd> = Копировать.`;
         }
     }
 
@@ -300,6 +313,10 @@ if (typeof window.rixaiInitialized === 'undefined') {
             html: combinedHtml.trim(),
             metadata: metadata
         };
+
+        // Cache the interactive output in case the user opens the popup to change the format
+        lastInteractiveResult = extractedData;
+        lastInteractiveTime = Date.now();
 
         stopInteractiveMode();
 
